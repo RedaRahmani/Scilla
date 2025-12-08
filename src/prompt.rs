@@ -164,7 +164,7 @@ fn prompt_config() -> anyhow::Result<ConfigCommand> {
 
     Ok(match choice {
         "Show ScillaConfig" => ConfigCommand::Show,
-        "Set ScillaConfig" => ConfigCommand::Generate,
+        "Generate ScillaConfig" => ConfigCommand::Generate,
         "Edit ScillaConfig" => ConfigCommand::Edit,
         "Go Back" => ConfigCommand::GoBack,
         _ => unreachable!(),

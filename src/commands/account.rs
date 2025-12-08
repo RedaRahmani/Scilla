@@ -22,7 +22,7 @@ pub enum AccountCommand {
 impl AccountCommand {
     pub fn description(&self) -> &'static str {
         match self {
-            AccountCommand::FetchAccount => "Get AccountInfo",
+            AccountCommand::FetchAccount => "Fetch Account",
             AccountCommand::Balance => "Check SOL balance",
             AccountCommand::Transfer => "Send SOL to another wallet",
             AccountCommand::Airdrop => "Request devnet/testnet SOL",

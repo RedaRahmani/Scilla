@@ -44,7 +44,7 @@ Navigate using arrow keys, press Enter to select.
 ### **2. Run & Configure**
 
 ```bash
-# Go to ScillaConfig > Set ScillaConfig 
+# Go to ScillaConfig > Generate ScillaConfig 
 
 ⚡ Scilla — Hacking Through the Solana Matrix
 > Choose a command group: ScillaConfig
@@ -76,7 +76,7 @@ Manage wallets and on-chain accounts.
 
 | Command                 | What it does                         | Status |
 | ----------------------- | ------------------------------------ | ------ |
-| **Fetch Account**       | Get AccountInfo                      | Done   |
+| **Fetch Account**       | Fetch Account                        | Done   |
 | **Balance**             | Check SOL balance                    | Done   |
 | **Transfer**            | Send SOL to another wallet           | Todo   |
 | **Airdrop**             | Request devnet/testnet SOL           | Done   |
