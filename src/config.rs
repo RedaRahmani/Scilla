@@ -114,10 +114,7 @@ mod tests {
 
     #[test]
     fn test_expand_tilde_with_home_prefix() {
-        let Some(home) = env::home_dir() else {
-            eprintln!("Skipping: HOME not set");
-            return;
-        };
+        let home = env::home_dir().expect("HOME should be set");
         let result = expand_tilde("~/foo/bar");
         let expected = home.join("foo/bar");
         assert_eq!(result, expected, "~/foo/bar should expand to $HOME/foo/bar");
@@ -152,10 +149,7 @@ mod tests {
 
     #[test]
     fn test_load_from_path_valid_config_with_tilde_expansion() {
-        let Some(home) = env::home_dir() else {
-            eprintln!("Skipping: HOME not set");
-            return;
-        };
+        let home = env::home_dir().expect("HOME should be set");
 
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
         let config_path = temp_dir.path().join("config.toml");
@@ -176,9 +170,5 @@ commitment-level = "confirmed"
         assert_eq!(config.rpc_url, "https://api.mainnet-beta.solana.com");
         assert_eq!(config.commitment_level, CommitmentLevel::Confirmed);
         assert_eq!(config.keypair_path, home.join("my/key.json"));
-        assert!(
-            !config.keypair_path.to_string_lossy().contains('~'),
-            "Tilde should be expanded in keypair_path"
-        );
     }
 }
