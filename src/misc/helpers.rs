@@ -5,8 +5,77 @@ use {
     solana_keypair::{EncodableKey, Keypair, Signature, Signer},
     solana_message::Message,
     solana_transaction::Transaction,
-    std::path::Path,
+    std::{path::Path, str::FromStr},
 };
+
+pub fn trim_and_parse<T: FromStr>(s: &str, field_name: &str) -> anyhow::Result<Option<T>> {
+    let trimmed = s.trim();
+    if trimmed.is_empty() {
+        Ok(None)
+    } else {
+        trimmed.parse().map(Some).map_err(|_| {
+            anyhow!(
+                "Invalid {}: {}. Must be a valid number",
+                field_name,
+                trimmed
+            )
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Commission(u8);
+
+impl Commission {
+    pub fn value(&self) -> u8 {
+        self.0
+    }
+}
+
+impl FromStr for Commission {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let commission = match trim_and_parse::<u8>(s, "commission")? {
+            Some(val) => val,
+            None => return Ok(Commission(0)), // default to 0%
+        };
+        if commission > 100 {
+            bail!("Commission must be between 0 and 100, got {}", commission);
+        }
+        Ok(Commission(commission))
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct SolAmount(f64);
+
+impl SolAmount {
+    pub fn value(&self) -> f64 {
+        self.0
+    }
+
+    pub fn to_lamports(&self) -> u64 {
+        sol_to_lamports(self.0)
+    }
+}
+
+impl FromStr for SolAmount {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let sol = trim_and_parse::<f64>(s, "amount")?
+            .ok_or_else(|| anyhow!("Amount cannot be empty. Please enter a SOL amount"))?;
+
+        if sol <= 0.0 || !sol.is_finite() {
+            bail!("Amount must be a positive finite number, got {}", sol);
+        }
+        if sol * LAMPORTS_PER_SOL as f64 > u64::MAX as f64 {
+            bail!("Amount too large: {} SOL would overflow", sol);
+        }
+        Ok(SolAmount(sol))
+    }
+}
 
 pub fn sol_to_lamports(sol: f64) -> u64 {
     (sol * LAMPORTS_PER_SOL as f64) as u64
@@ -14,32 +83,6 @@ pub fn sol_to_lamports(sol: f64) -> u64 {
 
 pub fn lamports_to_sol(lamports: u64) -> f64 {
     lamports as f64 / LAMPORTS_PER_SOL as f64
-}
-
-pub fn parse_sol_amount(amount_str: &str) -> anyhow::Result<u64> {
-    let trimmed = amount_str.trim();
-    if trimmed.is_empty() {
-        Ok(0)
-    } else {
-        let sol: f64 = trimmed
-            .parse()
-            .map_err(|_| anyhow!("Invalid amount: {}", trimmed))?;
-        Ok(sol_to_lamports(sol))
-    }
-}
-
-pub fn parse_commission(input: &str) -> anyhow::Result<u8> {
-    let trimmed = input.trim();
-    if trimmed.is_empty() {
-        return Ok(0); // default to 0%
-    }
-    let commission: u8 = trimmed
-        .parse()
-        .map_err(|_| anyhow!("Invalid commission: {}", trimmed))?;
-    if commission > 100 {
-        bail!("Commission must be between 0 and 100");
-    }
-    Ok(commission)
 }
 
 pub fn read_keypair_from_path<P: AsRef<Path>>(path: P) -> anyhow::Result<Keypair> {
